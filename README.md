@@ -28,3 +28,22 @@ end
 我們可以好好思考一下，為了通過 `Detective` 這個測項，所需要最少的準備是什麼？
 
 一個可以回應 `prod` 方法的物件，而且它的回傳值可以內嵌進字串，而 RSpec 有提供 test double 這個工具，讓我們可以很容易產生這樣的「假物件」
+
+## 測項的第二種實作方式：使用 stub 這個測試技巧
+
+```ruby
+RSpec.describe Detective do
+  it "says what noise the thingie makes" do
+    thingie = double(:thingie, prod: "oi")
+    subject = Detective.new(thingie)
+
+    result = subject.investigate
+
+    expect(result).to eq "It went oi"
+  end
+end
+```
+
+跟第一種實作方式相比，如果之後改了 `Thingie#prod` 的實作方式， `Detective` 維持不變，這個測項也可以通過
+
+相對之下較不易壞，比較不會跟別的類別的實作細節牽連，達到某種隔離效果

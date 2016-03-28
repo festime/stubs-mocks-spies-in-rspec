@@ -11,13 +11,21 @@ require_relative '../thingie'
 # 這樣實際產生一個 Thingie object
 # 並把它當作 Detective 初始化所需的參數
 # 那測項應該就可以 pass 了才對？
+#
+# 第二種做法使用 stub 這個測試技巧
+# 用 RSpec 提供的 `double` 方法
+# 產生「假物件」
+# 而且可以指定它能回覆什麼方法和對應的回傳值
+# 為了了解這個測項為什麼這麼寫
+# 相對於使用真實物件時
+# 可以不必去了解 Thingie 的實作細節
 RSpec.describe Detective do
   it "says what noise the thingie makes" do
-    thingie = Thingie.new
+    thingie = double(:thingie, prod: "oi")
     subject = Detective.new(thingie)
 
     result = subject.investigate
 
-    expect(result).to match(/It went (erp|blop|ping|ribbit)!/)
+    expect(result).to eq "It went oi"
   end
 end
