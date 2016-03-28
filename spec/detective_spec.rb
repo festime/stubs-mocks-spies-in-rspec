@@ -37,24 +37,20 @@ RSpec.describe Detective do
   # 有時候是因為那個方法 m_of_obj 會做我們要的結果
   # 所以在測項下這樣的預期
   #
-  # 這次不指定假物件要回應什麼和對應的回傳值
-  # 而是指定在收到 message `prod` 時
-  # 去把這個測項的區域變數 prod_count + 1
-  # 最後只要這個區域變數的值是 1
-  # 就表示假物件只收到 `prod` 這個 message 一次
-  #
-  #
-  #
-  # 使用 RSpec 內建功能達到同樣的效果：
-  # 預期某個 thingie 會在 Detective#investigate 中
-  # 收到訊息 `prod` 一次
-  # 省去我們自己設定用於計數的區域變數
+  # 使用 RSpec 內建功能來達成 spies
+  # 不會像用 mocks 時的「準備、斷言、準備、執行」
+  # 順序交錯
+  # 現在是正常的「準備、執行、斷言」
   it "prods the thingie at most once" do
-    thingie = double(:thingie)
-    expect(thingie).to receive(:prod).once
+    # Arrange
+    thingie = double(:thingie, prod: "")
     subject = Detective.new(thingie)
 
+    # Act
     subject.investigate
     subject.investigate
+
+    # Assert
+    expect(thingie).to have_received(:prod).once
   end
 end
