@@ -1,5 +1,5 @@
 ## 了解 Stubs, Mocks, and Spies
-參考文章：[Stubs, Mocks and Spies in RSpec](https://about.futurelearn.com/blog/stubs-mocks-spies-rspec/?utm_source=rubyweekly&utm_medium=email)
+參考文章：[Stubs, Mocks and Spies in RSpec](https://about.futurelearn.com/blog/stubs-mocks-spies-rspec)
 
 code 完全是照文章內容打，只是額外加上中文註解和 README
 
@@ -121,3 +121,50 @@ end
 ```
 
 這個做法的問題在於，一般測項的流程是「準備，執行，斷言（或預期）」，但是它變成「準備、斷言、準備、執行」這樣交錯了，可讀性降低了， Spies 這個技巧可以解決這個問題
+
+## 用 spies 改寫
+```ruby
+RSpec.describe Detective do
+  # 以下是要測另一個問題
+  # 如果我們預期「傳進某個方法 m 」的參數物件 obj
+  # 在 m 的執行過程
+  # 只收到某個 message `m_of_obj` 一次
+  # 換句話說， obj 會去執行一次 `m_of_obj`
+  # 有時候是因為那個方法 m_of_obj 會做我們要的結果
+  # 所以在測項下這樣的預期
+  #
+  # 使用 RSpec 內建功能來達成 spies
+  # 不會像用 mocks 時的「準備、斷言、準備、執行」
+  # 順序交錯
+  # 現在是正常的「準備、執行、斷言」
+  it "prods the thingie at most once" do
+    # Arrange
+    thingie = double(:thingie, prod: "")
+    subject = Detective.new(thingie)
+
+    # Act
+    subject.investigate
+    subject.investigate
+
+    # Assert
+    expect(thingie).to have_received(:prod).once
+  end
+end
+```
+
+讓測項的程式碼順序變得更自然，符合「準備、執行、斷言」的流程，增加可讀性
+
+## 總結
+
+### stubs
+製造假物件，指定這個假物件能回應哪些訊息，還有對應的回傳值，讓要測試的主角，在執行過程中一些地方，能獲得一致的結果
+
+**斷言的對象依然是主角**
+
+### mocks
+一樣製造假物件，但是現在我們**改對這個假物件斷言**，在主角的執行過程中，應該要收到什麼訊息、收到的訊息應該夾帶什麼參數、訊息收到的次數...等等，但是會有程式碼的流程些微不自然的問題（準備、斷言、（準備）、執行）
+
+### spies
+**類似 mocks ，一樣製造假物件，一樣是對假物件斷言**，但是透過測試工具的功能，而改善了測試程式碼的可讀性，流程更自然（準備、執行、斷言）
+
+以上是我讀這篇文章的...算是筆記吧，我對 mocks 和 spies 的差異有點不確定，可能不是這樣，需要再探究
