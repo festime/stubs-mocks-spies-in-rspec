@@ -1,9 +1,19 @@
 ## 了解 Stubs, Mocks, and Spies
 參考文章：[Stubs, Mocks and Spies in RSpec](https://about.futurelearn.com/blog/stubs-mocks-spies-rspec/?utm_source=rubyweekly&utm_medium=email)
 
-code 完全是照他文章內容的打，只是加上自己註解和 README 而已
+code 完全是照文章內容打，只是額外加上中文註解和 README
 
-## 測項的第一種實作方式：建立真實物件
+## 關於一個測項的流程
+通常，都會有這三個階段
+1. 準備測試環境，載入需要的 Library 、塞資料進資料庫、產生物件...等等
+2. 執行，可能是對物件做操作、呼叫方法...等等
+3. 斷言或預期結果，在第二步之後，某些東西應該要改變或沒改變，去檢查它們
+
+在絕大多數問題上，類別和物件之間會互動，所以要測試一個物件或類別的 instance method ，往往也需要額外準備除了「主角」之外的「配角物件」或「有互動關係的物件」，上述文章就是在探討有什麼技巧可以用在準備這些物件，使測試能運作又比較不容易壞的
+
+
+
+## 第一種實作方式：建立真實物件
 
 ```ruby
 RSpec.describe Detective do
@@ -29,11 +39,13 @@ end
 
 我們可以好好思考一下，為了通過 `Detective` 這個測項，所需要最少的準備是什麼？
 
-一個可以回應 `prod` 方法的物件，而且它的回傳值可以內嵌進字串，而 RSpec 有提供 test double 這個工具，讓我們可以很容易產生這樣的「假物件」
+=> 除了主角「一個 Detective 物件」之外，一個可以回應 `prod` 方法的物件，而且它的回傳值可以內嵌進字串
+
+RSpec 有提供 test double 這個工具，讓我們可以很容易產生這樣的「假物件」
 
 
 
-## 測項的第二種實作方式：使用 stub 這個測試技巧
+## 第二種實作方式：使用 stub 這個測試技巧
 
 ```ruby
 RSpec.describe Detective do
@@ -54,7 +66,9 @@ end
 
 
 
-## 測試參數物件在方法執行過程中接受訊息的次數
+## 用 mock 測試參數物件在方法執行過程中接受訊息的次數
+我們有時候只是想知道，當做參數的物件，在方法執行過程中，有沒有被呼叫到，有沒有收到預期中的參數
+
 ```ruby
 RSpec.describe Detective do
   # 以下是要測另一個問題
@@ -62,8 +76,9 @@ RSpec.describe Detective do
   # 在 m 的執行過程
   # 只收到某個 message `m_of_obj` 一次
   # 換句話說， obj 會去執行一次 `m_of_obj`
-  # 有時候是因為那個方法 m_of_obj 會做我們要的結果
-  # 所以在測試裡下這樣的預期
+  # 有時候
+  # 因為那個方法 m_of_obj 會做好我們要的結果
+  # 所以在測試裡就下這樣的預期
   #
   # 這次不指定假物件要回應什麼和對應的回傳值
   # 而是指定在收到 message `prod` 時
@@ -87,3 +102,22 @@ end
 測項這樣寫已經能夠達到我們的目的：預期一個參數物件在方法執行過程中，接受某個訊息的次數
 
 小小缺點是我們在測項裡面還要自己建一個區域變數來記錄訊息的接收次數，還有在收到訊息時要增加它，其實 RSpec 有內建功能可以幫我們省去這個小麻煩
+
+```ruby
+RSpec.describe Detective do
+  # 使用 RSpec 內建功能達到同樣的效果：
+  # 預期某個 thingie 會在 Detective#investigate 中
+  # 收到訊息 `prod` 一次
+  # 省去我們自己設定用於計數的區域變數
+  it "prods the thingie at most once" do
+    thingie = double(:thingie) # arrange
+    expect(thingie).to receive(:prod).once # assert
+    subject = Detective.new(thingie) # arrange
+
+    subject.investigate # action
+    subject.investigate # action
+  end
+end
+```
+
+這個做法的問題在於，一般測項的流程是「準備，執行，斷言（或預期）」，但是它變成「準備、斷言、準備、執行」這樣交錯了，可讀性降低了， Spies 這個技巧可以解決這個問題
