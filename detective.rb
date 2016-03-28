@@ -15,7 +15,17 @@ class Detective
   # 因為這裡的實作是每次呼叫 investigate
   # 都會去呼叫 @thingie 的 prod
   # 所以第二個測項的次數預期會失敗
+  #
+  #
+  #
+  # 改變實做
+  # 用 memoization 記住
+  # 第一次呼叫 investigate 時的執行結果
+  # 這樣第二次呼叫 investigate 時
+  # 因為 @results 已經有值
+  # 就不會去執行 ||= 右邊的運算式
+  # 也就不會去呼叫到 @thingie 的 prod
   def investigate
-    "It went #{@thingie.prod}"
+    @results ||= "It went #{@thingie.prod}"
   end
 end
