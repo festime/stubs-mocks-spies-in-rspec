@@ -12,6 +12,9 @@ class Detective
     @thingie = thingie
   end
 
+  # 因為這裡的實作是每次呼叫 investigate
+  # 都會去呼叫 @thingie 的 prod
+  # 所以第二個測項的次數預期會失敗
   def investigate
     "It went #{@thingie.prod}"
   end

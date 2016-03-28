@@ -28,4 +28,29 @@ RSpec.describe Detective do
 
     expect(result).to eq "It went oi"
   end
+
+  # 以下是要測另一個問題
+  # 如果我們預期「傳進某個方法 m 」的參數物件 obj
+  # 在 m 的執行過程
+  # 只收到某個 message `m_of_obj` 一次
+  # 或者說 obj 會去執行一次 `m_of_obj`
+  # 有時候是因為那個函數會做我們要的結果
+  # 所以在測項下這樣的預期
+  #
+  # 這次不指定假物件要回應什麼和對應的回傳值
+  # 而是指定在收到 message `prod` 時
+  # 去把這個測項的區域變數 prod_count + 1
+  # 最後只要這個區域變數的值是 1
+  # 就表示假物件只收到 `prod` 這個 message 一次
+  it "prods the thingie at most once" do
+    prod_count = 0
+    thingie = double(:thingie)
+    allow(thingie).to receive(:prod) { prod_count += 1 }
+    subject = Detective.new(thingie)
+
+    subject.investigate
+    subject.investigate
+
+    expect(prod_count).to eq 1
+  end
 end
