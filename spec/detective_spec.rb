@@ -33,8 +33,8 @@ RSpec.describe Detective do
   # 如果我們預期「傳進某個方法 m 」的參數物件 obj
   # 在 m 的執行過程
   # 只收到某個 message `m_of_obj` 一次
-  # 或者說 obj 會去執行一次 `m_of_obj`
-  # 有時候是因為那個函數會做我們要的結果
+  # 換句話說， obj 會去執行一次 `m_of_obj`
+  # 有時候是因為那個方法 m_of_obj 會做我們要的結果
   # 所以在測項下這樣的預期
   #
   # 這次不指定假物件要回應什麼和對應的回傳值
@@ -42,15 +42,19 @@ RSpec.describe Detective do
   # 去把這個測項的區域變數 prod_count + 1
   # 最後只要這個區域變數的值是 1
   # 就表示假物件只收到 `prod` 這個 message 一次
+  #
+  #
+  #
+  # 使用 RSpec 內建功能達到同樣的效果：
+  # 預期某個 thingie 會在 Detective#investigate 中
+  # 收到訊息 `prod` 一次
+  # 省去我們自己設定用於計數的區域變數
   it "prods the thingie at most once" do
-    prod_count = 0
     thingie = double(:thingie)
-    allow(thingie).to receive(:prod) { prod_count += 1 }
+    expect(thingie).to receive(:prod).once
     subject = Detective.new(thingie)
 
     subject.investigate
     subject.investigate
-
-    expect(prod_count).to eq 1
   end
 end
